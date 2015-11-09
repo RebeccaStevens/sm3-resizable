@@ -1,0 +1,324 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+
+<!--
+An element that can be resized by dargging at its edges.
+
+Example:
+
+    <sm3-resizable>Content</sm3-resizable>
+
+@group Seed Elements
+@element sm3-resizable
+@demo demo/index.html
+@hero hero.svg
+-->
+<dom-module id="sm3-resizable">
+
+  <template>
+    <style>
+      :host {
+        display: block;
+        position: relative;
+        overflow: hidden;
+      }
+      .handle {
+        position: absolute;
+        border: solid 1px black;
+        box-sizing: border-box;
+        background: rgba(255, 0, 0, .5);
+      }
+      #n {
+        cursor: n-resize;
+        left: 0;
+        right: 0;
+        top: 0;
+        height: var(--sm3-resizable-handle-size, 6px);
+      }
+      #e {
+        cursor: e-resize;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: var(--sm3-resizable-handle-size, 6px);
+      }
+      #s {
+        cursor: s-resize;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: var(--sm3-resizable-handle-size, 6px);
+      }
+      #w {
+        cursor: w-resize;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: var(--sm3-resizable-handle-size, 6px);
+      }
+      #nw {
+        cursor: nw-resize;
+        left: 0;
+        top: 0;
+        width: var(--sm3-resizable-handle-size, 6px);
+        height: var(--sm3-resizable-handle-size, 6px);
+      }
+      #ne {
+        cursor: ne-resize;
+        right: 0;
+        top: 0;
+        width: var(--sm3-resizable-handle-size, 6px);
+        height: var(--sm3-resizable-handle-size, 6px);
+      }
+      #sw {
+        cursor: sw-resize;
+        left: 0;
+        bottom: 0;
+        width: var(--sm3-resizable-handle-size, 6px);
+        height: var(--sm3-resizable-handle-size, 6px);
+      }
+      #se {
+        cursor: se-resize;
+        right: 0;
+        bottom: 0;
+        width: var(--sm3-resizable-handle-size, 6px);
+        height: var(--sm3-resizable-handle-size, 6px);
+      }
+    </style>
+    <content></content>
+    <div class="handle" id="n" on-track="_onHandleTrack"></div>
+    <div class="handle" id="e" on-track="_onHandleTrack"></div>
+    <div class="handle" id="s" on-track="_onHandleTrack"></div>
+    <div class="handle" id="w" on-track="_onHandleTrack"></div>
+    <div class="handle" id="nw" on-track="_onHandleTrack"></div>
+    <div class="handle" id="ne" on-track="_onHandleTrack"></div>
+    <div class="handle" id="sw" on-track="_onHandleTrack"></div>
+    <div class="handle" id="se" on-track="_onHandleTrack"></div>
+  </template>
+
+</dom-module>
+
+<script>
+
+  Polymer({
+
+    is: 'sm3-resizable',
+
+    properties: {
+
+      /**
+       * The width of this element.
+       */
+      width: {
+        type: Number,
+        notify: true
+      },
+
+      /**
+       * The height of this element.
+       */
+      height: {
+        type: Number,
+        notify: true
+      },
+
+      /**
+       * The minimum width of this element.
+       */
+      minWidth: {
+        type: Number,
+        value: 30,
+        notify: true
+      },
+
+      /**
+       * The minimum height of this element.
+       */
+      minHeight: {
+        type: Number,
+        value: 30,
+        notify: true
+      },
+
+      /**
+       * The maximum width of this element.
+       * undefined => no max
+       */
+      maxWidth: {
+        type: Number,
+        value: undefined,
+        notify: true
+      },
+
+      /**
+       * The maximum height of this element.
+       * undefined => no max
+       */
+      maxHeight: {
+        type: Number,
+        value: undefined,
+        notify: true
+      },
+
+      /**
+       * If `handleNw` is true, this element can be resize by dragging the north-west corner.
+       */
+      handleNw: {
+        type: Boolean,
+        value: false,
+        notify: true
+      },
+
+      /**
+       * If `handleN` is true, this element can be resize by dragging the north edge.
+       */
+      handleN: {
+        type: Boolean,
+        value: false,
+        notify: true
+      },
+
+      /**
+       * If `handleNe` is true, this element can be resize by dragging the north-east corner.
+       */
+      handleNe: {
+        type: Boolean,
+        value: false,
+        notify: true
+      },
+
+      /**
+       * If `handleW` is true, this element can be resize by dragging the west edge.
+       */
+      handleW: {
+        type: Boolean,
+        value: false,
+        notify: true
+      },
+
+      /**
+       * If `handleE` is true, this element can be resize by dragging the east edge.
+       */
+      handleE: {
+        type: Boolean,
+        value: false,
+        notify: true
+      },
+
+      /**
+       * If `handleSw` is true, this element can be resize by dragging the south-west corner.
+       */
+      handleSw: {
+        type: Boolean,
+        value: false,
+        notify: true
+      },
+
+      /**
+       * If `handleS` is true, this element can be resize by dragging the south edge.
+       */
+      handleS: {
+        type: Boolean,
+        value: false,
+        notify: true
+      },
+
+      /**
+       * If `handleSe` is true, this element can be resize by dragging the south-east corner.
+       */
+      handleSe: {
+        type: Boolean,
+        value: false,
+        notify: true
+      },
+
+      _translateX: {
+        type: Number,
+        value: 0
+      },
+
+      _translateY: {
+        type: Number,
+        value: 0
+      },
+    },
+
+    ready: function() {
+      // if all handles are false
+      if (!(this.handleNw || this.handleN || this.handleNe || this.handleW
+        || this.handleE || this.handleSw || this.handleS || this.handleSe)) {
+        // set them all to true
+        this.handleNw = this.handleN = this.handleNe = this.handleW =
+        this.handleE = this.handleSw = this.handleS = this.handleSe = true;
+      }
+    },
+
+    attached: function() {
+      this.width = this.clientWidth;
+      this.height = this.clientHeight;
+    },
+
+    _onHandleTrack: function(e) {
+      switch (e.detail.state) {
+        case 'start':
+          this._oData = {
+            width: this.width,
+            height: this.height,
+            translateX: this._translateX,
+            translateY: this._translateY
+          };
+          break;
+
+        case 'track':
+          var handle = this._getHandleData(e.currentTarget.id);
+
+          this.width = Math.max(this._oData.width + handle.x * e.detail.dx, this.minWidth, 1);
+          this.height = Math.max(this._oData.height + handle.y * e.detail.dy, this.minHeight, 1);
+          if (this.maxWidth) {
+            this.width = Math.min(this.width, this.maxWidth);
+          }
+          if (this.maxHeight) {
+            this.height = Math.min(this.height, this.maxHeight);
+          }
+          this._translateX = this._oData.translateX + ((handle.x < 0) ? (this._oData.width - this.width) : 0);
+          this._translateY = this._oData.translateY + ((handle.y < 0) ? (this._oData.height - this.height) : 0);
+
+          this.style.width = this.width + 'px';
+          this.style.height = this.height + 'px';
+          this.transform('translate('+this._translateX+'px,'+this._translateY+'px)');
+          break;
+
+        case 'end':
+
+          break;
+      }
+    },
+
+    _getHandleData: function(handle) {
+      var x, y;
+      switch (handle) {
+        case 'nw': x=-1; y=-1; break;
+        case 'n' : x=-0; y=-1; break;
+        case 'ne': x= 1; y=-1; break;
+        case 'w' : x=-1; y= 0; break;
+        case 'e' : x= 1; y= 0; break;
+        case 'sw': x=-1; y= 1; break;
+        case 's' : x= 0; y= 1; break;
+        case 'se': x= 1; y= 1; break;
+        default:
+          console.error('invalid handle.');
+      }
+      return { x: x, y: y }
+    }
+
+  });
+
+</script>

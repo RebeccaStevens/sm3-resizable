@@ -1,0 +1,28 @@
+{
+  "name": "sm3-resizable",
+  "version": "1.0.0",
+  "authors": [
+    "Mike Stevens <slaymaster3000@gmail.com>"
+  ],
+  "description": "An element that can be resized by dargging at its edges.",
+  "keywords": [
+    "web-component",
+    "polymer",
+    "resizable"
+  ],
+  "main": "sm3-resizable.html",
+  "license": "http://polymer.github.io/LICENSE.txt",
+  "homepage": "https://github.com/slaymaster3000/sm3-resizable/",
+  "ignore": [
+    "/.*",
+    "/test/"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.1.0"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "test-fixture": "PolymerElements/test-fixture#^1.0.0",
+    "web-component-tester": "*"
+  }
+}
