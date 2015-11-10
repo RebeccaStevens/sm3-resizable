@@ -1,16 +1,18 @@
 # sm3-resizable
 
-An element that can be resized by dragging at its edges.
 [Docs/Demos](http://slaymaster3000.github.io/sm3-resizable)
 
+An element that can be resized by dragging at its edges.
 
-## Dependencies
 
-Element dependencies are managed via [Bower](http://bower.io/). You can
-install that via:
+## Getting started
 
-    npm install -g bower
+### Install with bower
 
-Then, go ahead and download the element's dependencies:
+See [bower.io](http://bower.io/) for details.
 
-    bower install
+You can install sm3-resizable via:
+
+```
+bower install --save sm3-resizable
+```
