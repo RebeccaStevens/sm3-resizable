@@ -36,68 +36,69 @@ Only resize by dragging the south and east edges and the south-east corner.
         position: relative;
         overflow: hidden;
         box-sizing: border-box;
+        --sm3-resizable-handle-size: 6px;
       }
       .handle {
         position: absolute;
         border: solid 1px black;
         box-sizing: border-box;
-        background: rgba(255, 0, 0, .5);
+        background: rgba(0, 200, 0, 0.33);
       }
       #n {
         cursor: n-resize;
         left: 0;
         right: 0;
         top: 0;
-        height: var(--sm3-resizable-handle-size, 6px);
+        height: var(--sm3-resizable-handle-n-size, --sm3-resizable-handle-size);
       }
       #e {
         cursor: e-resize;
         right: 0;
         top: 0;
         bottom: 0;
-        width: var(--sm3-resizable-handle-size, 6px);
+        width: var(--sm3-resizable-handle-e-size, --sm3-resizable-handle-size);
       }
       #s {
         cursor: s-resize;
         left: 0;
         right: 0;
         bottom: 0;
-        height: var(--sm3-resizable-handle-size, 6px);
+        height: var(--sm3-resizable-handle-s-size, --sm3-resizable-handle-size);
       }
       #w {
         cursor: w-resize;
         left: 0;
         top: 0;
         bottom: 0;
-        width: var(--sm3-resizable-handle-size, 6px);
+        width: var(--sm3-resizable-handle-w-size, --sm3-resizable-handle-size);
       }
       #nw {
         cursor: nw-resize;
         left: 0;
         top: 0;
-        width: var(--sm3-resizable-handle-size, 6px);
-        height: var(--sm3-resizable-handle-size, 6px);
+        width: var(--sm3-resizable-handle-w-size, --sm3-resizable-handle-size);
+        height: var(--sm3-resizable-handle-n-size, --sm3-resizable-handle-size);
       }
       #ne {
         cursor: ne-resize;
         right: 0;
         top: 0;
-        width: var(--sm3-resizable-handle-size, 6px);
-        height: var(--sm3-resizable-handle-size, 6px);
+        width: var(--sm3-resizable-handle-e-size, --sm3-resizable-handle-size);
+        height: var(--sm3-resizable-handle-n-size, --sm3-resizable-handle-size);
       }
       #sw {
         cursor: sw-resize;
         left: 0;
         bottom: 0;
-        width: var(--sm3-resizable-handle-size, 6px);
-        height: var(--sm3-resizable-handle-size, 6px);
+        width: var(--sm3-resizable-handle-w-size, --sm3-resizable-handle-size);
+        height: var(--sm3-resizable-handle-s-size, --sm3-resizable-handle-size);
       }
       #se {
         cursor: se-resize;
         right: 0;
         bottom: 0;
-        width: var(--sm3-resizable-handle-size, 6px);
-        height: var(--sm3-resizable-handle-size, 6px);
+        width: var(--sm3-resizable-handle-e-size, --sm3-resizable-handle-size);
+        height: var(--sm3-resizable-handle-s-size, --sm3-resizable-handle-size);
       }
     </style>
     <content></content>
