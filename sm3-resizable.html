@@ -12,11 +12,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <!--
 An element that can be resized by dargging at its edges.
 
-Example:
+Example:<br>
+Allow resizing by dragging any edge/corner.
 
     <sm3-resizable>Content</sm3-resizable>
 
-@group Seed Elements
+Example:<br>
+Only resize by dragging the south and east edges and the south-east corner.
+
+    <sm3-resizable handle-s handle-e handle-se>Content</sm3-resizable>
+
+@group SM3 Elements
 @element sm3-resizable
 @demo demo/index.html
 @hero hero.svg
@@ -29,6 +35,7 @@ Example:
         display: block;
         position: relative;
         overflow: hidden;
+        box-sizing: border-box;
       }
       .handle {
         position: absolute;
@@ -115,28 +122,13 @@ Example:
     properties: {
 
       /**
-       * The width of this element.
-       */
-      width: {
-        type: Number,
-        notify: true
-      },
-
-      /**
-       * The height of this element.
-       */
-      height: {
-        type: Number,
-        notify: true
-      },
-
-      /**
        * The minimum width of this element.
        */
       minWidth: {
         type: Number,
-        value: 30,
-        notify: true
+        value: 16,
+        notify: true,
+        observer: '_updateDimensionRestrictions'
       },
 
       /**
@@ -144,8 +136,9 @@ Example:
        */
       minHeight: {
         type: Number,
-        value: 30,
-        notify: true
+        value: 16,
+        notify: true,
+        observer: '_updateDimensionRestrictions'
       },
 
       /**
@@ -154,18 +147,17 @@ Example:
        */
       maxWidth: {
         type: Number,
-        value: undefined,
-        notify: true
+        notify: true,
+        observer: '_updateDimensionRestrictions'
       },
 
       /**
        * The maximum height of this element.
-       * undefined => no max
        */
       maxHeight: {
         type: Number,
-        value: undefined,
-        notify: true
+        notify: true,
+        observer: '_updateDimensionRestrictions'
       },
 
       /**
@@ -240,11 +232,19 @@ Example:
         notify: true
       },
 
+      /**
+       * The element's translateX.
+       * (needed due to not easily being able to call something like `this.getTranslateX()`)
+       */
       _translateX: {
         type: Number,
         value: 0
       },
 
+      /**
+       * The element's translateY.
+       * (needed due to not easily being able to call something like `this.getTranslateY()`)
+       */
       _translateY: {
         type: Number,
         value: 0
@@ -261,17 +261,19 @@ Example:
       }
     },
 
-    attached: function() {
-      this.width = this.clientWidth;
-      this.height = this.clientHeight;
-    },
-
+    /**
+     * Called when tracking on a handle.
+     *
+     * @param {Event} e
+     */
     _onHandleTrack: function(e) {
+      window.getSelection().removeAllRanges();  // clear an selections
+
       switch (e.detail.state) {
         case 'start':
           this._oData = {
-            width: this.width,
-            height: this.height,
+            width: this.clientWidth,
+            height: this.clientHeight,
             translateX: this._translateX,
             translateY: this._translateY
           };
@@ -280,19 +282,18 @@ Example:
         case 'track':
           var handle = this._getHandleData(e.currentTarget.id);
 
-          this.width = Math.max(this._oData.width + handle.x * e.detail.dx, this.minWidth, 1);
-          this.height = Math.max(this._oData.height + handle.y * e.detail.dy, this.minHeight, 1);
-          if (this.maxWidth) {
-            this.width = Math.min(this.width, this.maxWidth);
-          }
-          if (this.maxHeight) {
-            this.height = Math.min(this.height, this.maxHeight);
-          }
-          this._translateX = this._oData.translateX + ((handle.x < 0) ? (this._oData.width - this.width) : 0);
-          this._translateY = this._oData.translateY + ((handle.y < 0) ? (this._oData.height - this.height) : 0);
+          // get the new desired dimesions of the element
+          var dim = this._enforceDimensionRestrictions(
+            this._oData.width  + handle.x * e.detail.dx,
+            this._oData.height + handle.y * e.detail.dy);
 
-          this.style.width = this.width + 'px';
-          this.style.height = this.height + 'px';
+          // translate the element if needed
+          this._translateX = this._oData.translateX + ((handle.x < 0) ? (this._oData.width  - dim.width)  : 0);
+          this._translateY = this._oData.translateY + ((handle.y < 0) ? (this._oData.height - dim.height) : 0);
+
+          // apply the new style
+          this.style.width = dim.width + 'px';
+          this.style.height = dim.height + 'px';
           this.transform('translate('+this._translateX+'px,'+this._translateY+'px)');
           break;
 
@@ -302,6 +303,12 @@ Example:
       }
     },
 
+    /**
+     * Get the movemenet direction of the given handle.
+     *
+     * @param {string} handle - One of ['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se']
+     * @return {{x: Number, y:Number}}
+     */
     _getHandleData: function(handle) {
       var x, y;
       switch (handle) {
@@ -317,6 +324,43 @@ Example:
           console.error('invalid handle.');
       }
       return { x: x, y: y }
+    },
+
+    /**
+     * Restriction the given width and height by `minWidth`, `minHeight`, `maxWidth` and `maxHeight`.
+     *
+     * @param {Number} width
+     * @param {Number} height
+     * @return {{width: Number, height: Number}}
+     */
+    _enforceDimensionRestrictions: function(width, height) {
+      if (this.minWidth) {
+        width = Math.max(width, this.minWidth);
+      }
+      if (this.minHeight) {
+        height = Math.max(height, this.minHeight);
+      }
+      if (this.maxWidth) {
+        width = Math.min(width, this.maxWidth);
+      }
+      if (this.maxHeight) {
+        height = Math.min(height, this.maxHeight);
+      }
+
+      return {width: width, height: height};
+    },
+
+    /**
+     * Update the restrictions on the dimension of this element.
+     */
+    _updateDimensionRestrictions: function() {
+      // don't do anything if not attached
+      if (!this.isAttached) {
+        return;
+      }
+      var dim = this._enforceDimensionRestrictions(this.clientWidth, this.clientHeight);
+      this.style.width = dim.width + 'px';
+      this.style.height = dim.height + 'px';
     }
 
   });
