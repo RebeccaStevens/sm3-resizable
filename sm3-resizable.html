@@ -249,6 +249,12 @@ Only resize by dragging the south and east edges and the south-east corner.
         type: Number,
         value: 0
       },
+
+      /**
+       * Stores original values for width, height, translateX and translateY.
+       * Needed by the tracking handler.
+       */
+      _oData: Object
     },
 
     ready: function() {
@@ -307,7 +313,7 @@ Only resize by dragging the south and east edges and the south-east corner.
      * Get the movemenet direction of the given handle.
      *
      * @param {string} handle - One of ['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se']
-     * @return {{x: Number, y:Number}}
+     * @return {{x: Number, y: Number}}
      */
     _getHandleData: function(handle) {
       var x, y;
@@ -323,7 +329,7 @@ Only resize by dragging the south and east edges and the south-east corner.
         default:
           console.error('invalid handle.');
       }
-      return { x: x, y: y }
+      return {x: x, y: y};
     },
 
     /**
