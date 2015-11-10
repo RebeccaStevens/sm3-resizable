@@ -40,76 +40,85 @@ Only resize by dragging the south and east edges and the south-east corner.
       }
       .handle {
         position: absolute;
-        border: solid 1px black;
-        box-sizing: border-box;
-        background: rgba(0, 200, 0, 0.33);
       }
-      #n {
+      .handle.n {
         cursor: n-resize;
-        left: 0;
-        right: 0;
         top: 0;
+        right: 0;
+        bottom: auto;
+        left: 0;
         height: var(--sm3-resizable-handle-n-size, --sm3-resizable-handle-size);
       }
-      #e {
+      .handle.e {
         cursor: e-resize;
-        right: 0;
         top: 0;
+        right: 0;
         bottom: 0;
+        left: auto;
         width: var(--sm3-resizable-handle-e-size, --sm3-resizable-handle-size);
       }
-      #s {
+      .handle.s {
         cursor: s-resize;
-        left: 0;
+        top: auto;
         right: 0;
         bottom: 0;
+        left: 0;
         height: var(--sm3-resizable-handle-s-size, --sm3-resizable-handle-size);
       }
-      #w {
+      .handle.w {
         cursor: w-resize;
-        left: 0;
         top: 0;
+        right: auto;
         bottom: 0;
+        left: 0;
         width: var(--sm3-resizable-handle-w-size, --sm3-resizable-handle-size);
       }
-      #nw {
+      .handle.n.w {
         cursor: nw-resize;
-        left: 0;
-        top: 0;
-        width: var(--sm3-resizable-handle-w-size, --sm3-resizable-handle-size);
-        height: var(--sm3-resizable-handle-n-size, --sm3-resizable-handle-size);
+        right: auto;
+        bottom: auto;
       }
-      #ne {
+      .handle.n.e {
         cursor: ne-resize;
-        right: 0;
-        top: 0;
-        width: var(--sm3-resizable-handle-e-size, --sm3-resizable-handle-size);
-        height: var(--sm3-resizable-handle-n-size, --sm3-resizable-handle-size);
+        bottom: auto;
+        left: auto;
       }
-      #sw {
+      .handle.s.w {
         cursor: sw-resize;
-        left: 0;
-        bottom: 0;
-        width: var(--sm3-resizable-handle-w-size, --sm3-resizable-handle-size);
-        height: var(--sm3-resizable-handle-s-size, --sm3-resizable-handle-size);
+        top: auto;
+        right: auto;
       }
-      #se {
+      .handle.s.e {
         cursor: se-resize;
-        right: 0;
-        bottom: 0;
-        width: var(--sm3-resizable-handle-e-size, --sm3-resizable-handle-size);
-        height: var(--sm3-resizable-handle-s-size, --sm3-resizable-handle-size);
+        top: auto;
+        left: auto;
+      }
+      :host[show-handles] .handle {
+        box-sizing: border-box;
+        background: lime;
+      }
+      :host[show-handles] .handle.n {
+        border-bottom: solid 1px black;
+      }
+      :host[show-handles] .handle.e {
+        border-left: solid 1px black;
+      }
+      :host[show-handles] .handle.s {
+        border-top: solid 1px black;
+      }
+      :host[show-handles] .handle.w {
+        border-right: solid 1px black;
       }
     </style>
     <content></content>
-    <div class="handle" id="n" on-track="_onHandleTrack"></div>
-    <div class="handle" id="e" on-track="_onHandleTrack"></div>
-    <div class="handle" id="s" on-track="_onHandleTrack"></div>
-    <div class="handle" id="w" on-track="_onHandleTrack"></div>
-    <div class="handle" id="nw" on-track="_onHandleTrack"></div>
-    <div class="handle" id="ne" on-track="_onHandleTrack"></div>
-    <div class="handle" id="sw" on-track="_onHandleTrack"></div>
-    <div class="handle" id="se" on-track="_onHandleTrack"></div>
+    <div class="handle n" on-track="_onHandleTrack"></div>
+    <div class="handle e" on-track="_onHandleTrack"></div>
+    <div class="handle s" on-track="_onHandleTrack"></div>
+    <div class="handle w" on-track="_onHandleTrack"></div>
+    <div class="handle n w" on-track="_onHandleTrack"></div>
+    <div class="handle n e" on-track="_onHandleTrack"></div>
+    <div class="handle s w" on-track="_onHandleTrack"></div>
+    <div class="handle s e" on-track="_onHandleTrack"></div>
   </template>
 
 </dom-module>
@@ -121,6 +130,15 @@ Only resize by dragging the south and east edges and the south-east corner.
     is: 'sm3-resizable',
 
     properties: {
+
+      /**
+       * Show the draggable handles.
+       */
+      showHandles: {
+        type: Boolean,
+        value: false,
+        reflectToAttr: true
+      },
 
       /**
        * The minimum width of this element.
@@ -266,6 +284,10 @@ Only resize by dragging the south and east edges and the south-east corner.
         this.handleNw = this.handleN = this.handleNe = this.handleW =
         this.handleE = this.handleSw = this.handleS = this.handleSe = true;
       }
+    },
+
+    attached: function() {
+      this._updateDimensionRestrictions();
     },
 
     /**
