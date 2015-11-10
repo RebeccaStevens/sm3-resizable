@@ -1,6 +1,7 @@
 # sm3-resizable
 
-An element that can be resized by dargging at its edges.
+An element that can be resized by dragging at its edges.
+[Docs/Demos](http://slaymaster3000.github.io/sm3-resizable)
 
 
 ## Dependencies

@@ -4,7 +4,7 @@
   "authors": [
     "Mike Stevens <slaymaster3000@gmail.com>"
   ],
-  "description": "An element that can be resized by dargging at its edges.",
+  "description": "An element that can be resized by dragging at its edges.",
   "keywords": [
     "web-component",
     "polymer",
