@@ -6,6 +6,7 @@
   ],
   "description": "An element that can be resized by dragging at its edges.",
   "keywords": [
+    "web-components",
     "web-component",
     "polymer",
     "resizable",
