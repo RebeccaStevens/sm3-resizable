@@ -15,20 +15,41 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <title>sm3-resizable Demo</title>
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
     <link rel="import" href="../sm3-resizable.html">
-    <style>
-      body{
-        position: relative;
+    <style is="custom-style">
+      html {
+        width: 100%;
+        height: 100%;
       }
-      sm3-resizable {
+      body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-around;
+        flex-wrap: wrap;
+      }
+      .demo {
+        border: solid 1px black;
+        position: relative;
+        width: 300px;
+        height: 300px;
+      }
+      .demo > h1 {
+        margin: 0.25em;
+        font-size: 1.5em;
+      }
+      .demo > sm3-resizable {
         position: absolute;
-        top: 100px;
-        left: 100px;
-        width: 100px;
-        height: 100px;
+        top: 25%;
+        left: 25%;
+        width: 50%;
+        height: 50%;
         background: lightyellow;
         padding: 6px;
       }
-      div {
+      .demo > sm3-resizable > div {
         height: 100%;
         width: 100%;
         display: flex;
@@ -36,13 +57,48 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         align-items: center;
         justify-content: center;
       }
+      #demo3 > sm3-resizable {
+        padding: 20px;
+        --sm3-resizable-handle-size: 20px;
+      }
+      #demo4 > sm3-resizable {
+        padding: 20px 15px 10px 5px;
+        --sm3-resizable-handle-n-size: 20px;
+        --sm3-resizable-handle-e-size: 15px;
+        --sm3-resizable-handle-s-size: 10px;
+        --sm3-resizable-handle-w-size:  5px;
+      }
     </style>
   </head>
   <body unresolved>
 
-    <sm3-resizable>
-      <div>Resizable</div>
-    </sm3-resizable>
+    <div class="demo" id="demo1">
+      <h1>Demo 1</h1>
+      <sm3-resizable>
+        <div>Resizable</div>
+      </sm3-resizable>
+    </div>
+
+    <div class="demo" id="demo2">
+      <h1>Demo 2</h1>
+      <sm3-resizable handle-e handle-s>
+        <div>Resizable 'e', 's'</div>
+      </sm3-resizable>
+    </div>
+
+    <div class="demo" id="demo3">
+      <h1>Demo 3</h1>
+      <sm3-resizable>
+        <div>Resizable</div>
+      </sm3-resizable>
+    </div>
+
+    <div class="demo" id="demo4">
+      <h1>Demo 4</h1>
+      <sm3-resizable>
+        <div>Resizable</div>
+      </sm3-resizable>
+    </div>
 
   </body>
 </html>
