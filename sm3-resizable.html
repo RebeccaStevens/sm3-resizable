@@ -34,83 +34,109 @@ Only resize by dragging the south and east edges and the south-east corner.
       :host {
         display: block;
         position: relative;
-        overflow: hidden;
+        --sm3-resizable-handle-size: 10px;
+        @apply(--sm3-resizable);
+      }
+      #content-container {
+        height: 100%;
+        width: 100%;
         box-sizing: border-box;
-        --sm3-resizable-handle-size: 6px;
+        overflow: var(--sm3-resizable-content-overflow, auto);
+        @apply(--sm3-resizable-content);
       }
       .handle {
         position: absolute;
+        box-sizing: border-box;
+        @apply(--sm3-resizable-handle);
       }
       .handle.n {
-        cursor: n-resize;
-        top: 0;
-        right: 0;
-        bottom: auto;
-        left: 0;
         height: var(--sm3-resizable-handle-n-size, --sm3-resizable-handle-size);
       }
       .handle.e {
-        cursor: e-resize;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: auto;
         width: var(--sm3-resizable-handle-e-size, --sm3-resizable-handle-size);
       }
       .handle.s {
-        cursor: s-resize;
-        top: auto;
-        right: 0;
-        bottom: 0;
-        left: 0;
         height: var(--sm3-resizable-handle-s-size, --sm3-resizable-handle-size);
       }
       .handle.w {
+        width: var(--sm3-resizable-handle-w-size, --sm3-resizable-handle-size);
+      }
+      .handle.n:not(.w):not(.e) {
+        cursor: n-resize;
+        top: calc(var(--sm3-resizable-handle-n-size, --sm3-resizable-handle-size) / -2);
+        right: 0;
+        bottom: auto;
+        left: 0;
+        @apply(--sm3-resizable-handle-edge);
+        @apply(--sm3-resizable-handle-n);
+      }
+      .handle.e:not(.n):not(.s) {
+        cursor: e-resize;
+        top: 0;
+        right: calc(var(--sm3-resizable-handle-e-size, --sm3-resizable-handle-size) / -2);
+        bottom: 0;
+        left: auto;
+        @apply(--sm3-resizable-handle-edge);
+        @apply(--sm3-resizable-handle-e);
+      }
+      .handle.s:not(.w):not(.e) {
+        cursor: s-resize;
+        top: auto;
+        right: 0;
+        bottom: calc(var(--sm3-resizable-handle-s-size, --sm3-resizable-handle-size) / -2);
+        left: 0;
+        @apply(--sm3-resizable-handle-edge);
+        @apply(--sm3-resizable-handle-s);
+      }
+      .handle.w:not(.n):not(.s) {
         cursor: w-resize;
         top: 0;
         right: auto;
         bottom: 0;
-        left: 0;
-        width: var(--sm3-resizable-handle-w-size, --sm3-resizable-handle-size);
+        left: calc(var(--sm3-resizable-handle-w-size, --sm3-resizable-handle-size) / -2);
+        @apply(--sm3-resizable-handle-edge);
+        @apply(--sm3-resizable-handle-w);
       }
       .handle.n.w {
         cursor: nw-resize;
+        top: calc(var(--sm3-resizable-handle-n-size, --sm3-resizable-handle-size) / -2);
         right: auto;
         bottom: auto;
+        left: calc(var(--sm3-resizable-handle-w-size, --sm3-resizable-handle-size) / -2);
+        @apply(--sm3-resizable-handle-corner);
+        @apply(--sm3-resizable-handle-nw);
       }
       .handle.n.e {
         cursor: ne-resize;
+        top: calc(var(--sm3-resizable-handle-n-size, --sm3-resizable-handle-size) / -2);
+        right: calc(var(--sm3-resizable-handle-e-size, --sm3-resizable-handle-size) / -2);
         bottom: auto;
         left: auto;
+        @apply(--sm3-resizable-handle-corner);
+        @apply(--sm3-resizable-handle-ne);
       }
       .handle.s.w {
         cursor: sw-resize;
         top: auto;
         right: auto;
+        bottom: calc(var(--sm3-resizable-handle-s-size, --sm3-resizable-handle-size) / -2);
+        left: calc(var(--sm3-resizable-handle-w-size, --sm3-resizable-handle-size) / -2);
+        @apply(--sm3-resizable-handle-corner);
+        @apply(--sm3-resizable-handle-sw);
       }
       .handle.s.e {
         cursor: se-resize;
         top: auto;
+        right: calc(var(--sm3-resizable-handle-e-size, --sm3-resizable-handle-size) / -2);
+        bottom: calc(var(--sm3-resizable-handle-s-size, --sm3-resizable-handle-size) / -2);
         left: auto;
-      }
-      :host[show-handles] .handle {
-        box-sizing: border-box;
-        background: lime;
-      }
-      :host[show-handles] .handle.n {
-        border-bottom: solid 1px black;
-      }
-      :host[show-handles] .handle.e {
-        border-left: solid 1px black;
-      }
-      :host[show-handles] .handle.s {
-        border-top: solid 1px black;
-      }
-      :host[show-handles] .handle.w {
-        border-right: solid 1px black;
+        @apply(--sm3-resizable-handle-corner);
+        @apply(--sm3-resizable-handle-se);
       }
     </style>
-    <content></content>
+    <div id="content-container">
+      <content></content>
+    </div>
     <div class="handle n" data-handle="n" on-track="_onHandleTrack" hidden="{{!handleN}}"></div>
     <div class="handle e" data-handle="e" on-track="_onHandleTrack" hidden="{{!handleE}}"></div>
     <div class="handle s" data-handle="s" on-track="_onHandleTrack" hidden="{{!handleS}}"></div>
@@ -130,15 +156,6 @@ Only resize by dragging the south and east edges and the south-east corner.
     is: 'sm3-resizable',
 
     properties: {
-
-      /**
-       * Show the draggable handles.
-       */
-      showHandles: {
-        type: Boolean,
-        value: false,
-        reflectToAttr: true
-      },
 
       /**
        * The minimum width of this element.

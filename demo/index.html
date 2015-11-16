@@ -58,28 +58,43 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         width: 50%;
         height: 50%;
         background: lightyellow;
-        border: solid 1px black;
-        padding: 6px;
+        --sm3-resizable-content: {
+          border: solid 1px black;
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+        };
       }
-      .demo > sm3-resizable > div {
-        height: 100%;
-        width: 100%;
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
+      #demo1 > sm3-resizable {
+
+      }
+      #demo2 > sm3-resizable {
+
+      }
+      #demo3 > sm3-resizable {
+
       }
       #demo4 > sm3-resizable {
-        padding: 20px;
         --sm3-resizable-handle-size: 20px;
       }
       #demo5 > sm3-resizable {
-        padding: 20px 15px 10px 5px;
         --sm3-resizable-handle-n-size: 20px;
         --sm3-resizable-handle-e-size: 15px;
         --sm3-resizable-handle-s-size: 10px;
         --sm3-resizable-handle-w-size:  5px;
+      }
+      sm3-resizable.show-handles {
+        --sm3-resizable-handle: {
+          border: solid 1px black;
+        };
+        --sm3-resizable-handle-edge: {
+          background: rgba(0, 255, 0, 0.60);
+        };
+        --sm3-resizable-handle-corner: {
+          background: rgba(0, 0, 255, 0.80);
+        };
       }
     </style>
   </head>
@@ -92,35 +107,36 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <div class="demo" id="demo1">
         <h1>Demo 1</h1>
         <sm3-resizable>
-          <div>Resizable</div>
+          Resizable
         </sm3-resizable>
       </div>
 
       <div class="demo" id="demo2">
         <h1>Demo 2</h1>
-        <sm3-resizable handle-e handle-s>
-          <div>Resizable 'e', 's'</div>
+        <sm3-resizable handle-e handle-s handle-se>
+          Resizable using<br>
+          &quot;e&quot;, &quot;s&quot; and &quot;se&quot; handles
         </sm3-resizable>
       </div>
 
       <div class="demo" id="demo3">
         <h1>Demo 3</h1>
-        <sm3-resizable min-width="50" min-height="50" max-width="125" max-height="125">
-          <div>Resizable restricted</div>
+        <sm3-resizable min-width="75" min-height="75" max-width="250" max-height="250">
+          Restricted Resizing
         </sm3-resizable>
       </div>
 
       <div class="demo" id="demo4">
         <h1>Demo 4</h1>
         <sm3-resizable>
-          <div>Resizable Large Handles</div>
+          Large Handles
         </sm3-resizable>
       </div>
 
       <div class="demo" id="demo5">
         <h1>Demo 5</h1>
         <sm3-resizable>
-          <div>Resizable Different Handles</div>
+          Different Handles Sizes
         </sm3-resizable>
       </div>
 
@@ -138,13 +154,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         var resizers = document.querySelectorAll('sm3-resizable');
         for (var i = 0; i < resizers.length; i++) {
-          if (showHandles) {
-            resizers[i].setAttribute('show-handles', true);
-          }
-          else {
-            resizers[i].removeAttribute('show-handles');
-          }
+          resizers[i].toggleClass('show-handles', showHandles);
         }
+        Polymer.updateStyles();
       });
     </script>
 
