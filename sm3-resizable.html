@@ -137,14 +137,16 @@ Only resize by dragging the south and east edges and the south-east corner.
     <div id="content-container">
       <content></content>
     </div>
-    <div class="handle n" data-handle="n" on-track="_onHandleTrack" hidden="{{!handleN}}"></div>
-    <div class="handle e" data-handle="e" on-track="_onHandleTrack" hidden="{{!handleE}}"></div>
-    <div class="handle s" data-handle="s" on-track="_onHandleTrack" hidden="{{!handleS}}"></div>
-    <div class="handle w" data-handle="w" on-track="_onHandleTrack" hidden="{{!handleW}}"></div>
-    <div class="handle n w" data-handle="nw" on-track="_onHandleTrack" hidden="{{!handleNw}}"></div>
-    <div class="handle n e" data-handle="ne" on-track="_onHandleTrack" hidden="{{!handleNe}}"></div>
-    <div class="handle s w" data-handle="sw" on-track="_onHandleTrack" hidden="{{!handleSw}}"></div>
-    <div class="handle s e" data-handle="se" on-track="_onHandleTrack" hidden="{{!handleSe}}"></div>
+    <div hidden="{{disabled}}">
+      <div class="handle n" data-handle="n" on-track="_onHandleTrack" hidden="{{!handleN}}"></div>
+      <div class="handle e" data-handle="e" on-track="_onHandleTrack" hidden="{{!handleE}}"></div>
+      <div class="handle s" data-handle="s" on-track="_onHandleTrack" hidden="{{!handleS}}"></div>
+      <div class="handle w" data-handle="w" on-track="_onHandleTrack" hidden="{{!handleW}}"></div>
+      <div class="handle n w" data-handle="nw" on-track="_onHandleTrack" hidden="{{!handleNw}}"></div>
+      <div class="handle n e" data-handle="ne" on-track="_onHandleTrack" hidden="{{!handleNe}}"></div>
+      <div class="handle s w" data-handle="sw" on-track="_onHandleTrack" hidden="{{!handleSw}}"></div>
+      <div class="handle s e" data-handle="se" on-track="_onHandleTrack" hidden="{{!handleSe}}"></div>
+    </div>
   </template>
 
 </dom-module>
@@ -266,6 +268,17 @@ Only resize by dragging the south and east edges and the south-east corner.
         type: Boolean,
         value: false,
         notify: true
+      },
+
+      /**
+       * Whether or not this element is disabled.
+       */
+      disabled: {
+        type: Boolean,
+        value: false,
+        notify: true,
+        reflectToAttribute: true,
+        observer: '_onDisabledChanged'
       },
 
       /**
@@ -407,6 +420,20 @@ Only resize by dragging the south and east edges and the south-east corner.
       var dim = this._enforceDimensionRestrictions(this.clientWidth, this.clientHeight);
       this.style.width = dim.width + 'px';
       this.style.height = dim.height + 'px';
+    },
+
+    /**
+     * Called when `disabled` is changed.
+     */
+    _onDisabledChanged: function() {
+      if (this.disabled) {
+        this.style.width = 'auto';
+        this.style.height = 'auto';
+        this.transform('translate(0px,0px)');
+      }
+      else {
+        this._updateDimensionRestrictions();
+      }
     }
 
   });
