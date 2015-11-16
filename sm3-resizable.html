@@ -430,9 +430,12 @@ Only resize by dragging the south and east edges and the south-east corner.
       if (!this.isAttached) {
         return;
       }
-      var dim = this._getDimensionsWithRestrictionsEnforced(this.clientWidth, this.clientHeight);
-      this.style.width = dim.width + 'px';
-      this.style.height = dim.height + 'px';
+      // wait for first render so that the actual client size is known
+      setTimeout(function() {
+        var dim = this._enforceDimensionRestrictions(this.clientWidth, this.clientHeight);
+        this.style.width = dim.width + 'px';
+        this.style.height = dim.height + 'px';
+      }.bind(this), 0);
     }
 
   });
