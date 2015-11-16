@@ -51,7 +51,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         margin: 0.25em;
         font-size: 1.5em;
       }
-      .demo > sm3-resizable {
+      .demo sm3-resizable {
         position: absolute;
         top: 25%;
         left: 25%;
@@ -67,23 +67,40 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           text-align: center;
         };
       }
-      #demo1 > sm3-resizable {
+      #demo1 sm3-resizable {
 
       }
-      #demo2 > sm3-resizable {
+      #demo2 sm3-resizable {
 
       }
-      #demo3 > sm3-resizable {
+      #demo3 sm3-resizable {
 
       }
-      #demo4 > sm3-resizable {
+      #demo4 sm3-resizable {
         --sm3-resizable-handle-size: 20px;
       }
-      #demo5 > sm3-resizable {
+      #demo5 sm3-resizable {
         --sm3-resizable-handle-n-size: 20px;
         --sm3-resizable-handle-e-size: 15px;
         --sm3-resizable-handle-s-size: 10px;
         --sm3-resizable-handle-w-size:  5px;
+      }
+      #demo6 sm3-resizable {
+
+      }
+      #demo7 sm3-resizable {
+
+      }
+      #demo7 > div {
+        border: solid 1px black;
+        width: 70%;
+        height: 70%;
+        background: lightgray;
+        position: absolute;
+        top: 15%;
+        right: 15%;
+        bottom: 15%;
+        left: 15%;
       }
       sm3-resizable.show-handles {
         --sm3-resizable-handle: {
@@ -140,9 +157,34 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </sm3-resizable>
       </div>
 
+      <div class="demo" id="demo6">
+        <h1>Demo 6</h1>
+        <sm3-resizable>
+          Constrained to Parent
+        </sm3-resizable>
+      </div>
+
+      <div class="demo" id="demo7">
+        <h1>Demo 7</h1>
+        <div>
+          <sm3-resizable>
+            Constrained to Parent's Parent
+          </sm3-resizable>
+        </div>
+      </div>
+
     </div>
 
     <script>
+      // demo 6 container
+      var demo6resizer = document.querySelector('#demo6 sm3-resizable');
+      demo6resizer.container = document.querySelector('#demo6');
+
+      // demo 7 container
+      var demo7resizer = document.querySelector('#demo7 sm3-resizable');
+      demo7resizer.container = document.querySelector('#demo7');
+
+      // toggle handle visiablity
       var showHandles = false;
 
       var btn_toggleHandles = document.querySelector('#toggleHandles');
