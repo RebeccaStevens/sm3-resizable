@@ -58,6 +58,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         width: 50%;
         height: 50%;
         background: lightyellow;
+        z-index: 1;
         --sm3-resizable-content: {
           border: solid 1px black;
           display: flex;
@@ -166,11 +167,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       <div class="demo" id="demo7">
         <h1>Demo 7</h1>
-        <div>
-          <sm3-resizable>
-            Constrained to Parent's Parent
-          </sm3-resizable>
-        </div>
+        <div class="container"></div>
+        <sm3-resizable>
+          Constrained to Sibling
+        </sm3-resizable>
       </div>
 
     </div>
@@ -182,7 +182,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       // demo 7 container
       var demo7resizer = document.querySelector('#demo7 sm3-resizable');
-      demo7resizer.container = document.querySelector('#demo7');
+      demo7resizer.container = document.querySelector('#demo7 .container');
 
       // toggle handle visiablity
       var showHandles = false;
