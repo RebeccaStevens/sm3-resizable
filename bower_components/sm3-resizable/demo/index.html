@@ -1,0 +1,206 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <title>sm3-resizable Demo</title>
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <link rel="import" href="../sm3-resizable.html">
+    <style is="custom-style">
+      html {
+        width: 100%;
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 10px;
+        box-sizing: border-box;
+      }
+      #demos {
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+        justify-content: space-around;
+        flex-wrap: wrap;
+        flex: 1;
+        width: 100%;
+        padding: 10px;
+        box-sizing: border-box;
+      }
+      .demo {
+        border: solid 1px black;
+        position: relative;
+        width: 300px;
+        height: 300px;
+      }
+      .demo > h1 {
+        margin: 0.25em;
+        font-size: 1.5em;
+      }
+      .demo sm3-resizable {
+        position: absolute;
+        top: 25%;
+        left: 25%;
+        width: 50%;
+        height: 50%;
+        background: lightyellow;
+        z-index: 1;
+        --sm3-resizable-content: {
+          border: solid 1px black;
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+        };
+      }
+      #demo1 sm3-resizable {
+
+      }
+      #demo2 sm3-resizable {
+
+      }
+      #demo3 sm3-resizable {
+
+      }
+      #demo4 sm3-resizable {
+        --sm3-resizable-handle-size: 20px;
+      }
+      #demo5 sm3-resizable {
+        --sm3-resizable-handle-n-size: 20px;
+        --sm3-resizable-handle-e-size: 15px;
+        --sm3-resizable-handle-s-size: 10px;
+        --sm3-resizable-handle-w-size:  5px;
+      }
+      #demo6 sm3-resizable {
+
+      }
+      #demo7 sm3-resizable {
+
+      }
+      #demo7 > div {
+        border: solid 1px black;
+        width: 70%;
+        height: 70%;
+        background: lightgray;
+        position: absolute;
+        top: 15%;
+        right: 15%;
+        bottom: 15%;
+        left: 15%;
+      }
+      sm3-resizable.show-handles {
+        --sm3-resizable-handle: {
+          border: solid 1px black;
+        };
+        --sm3-resizable-handle-edge: {
+          background: rgba(0, 255, 0, 0.60);
+        };
+        --sm3-resizable-handle-corner: {
+          background: rgba(0, 0, 255, 0.80);
+        };
+      }
+    </style>
+  </head>
+  <body unresolved>
+
+    <button id="toggleHandles">Show Handles</button>
+
+    <div id="demos">
+
+      <div class="demo" id="demo1">
+        <h1>Demo 1</h1>
+        <sm3-resizable>
+          Resizable
+        </sm3-resizable>
+      </div>
+
+      <div class="demo" id="demo2">
+        <h1>Demo 2</h1>
+        <sm3-resizable handle-e handle-s handle-se>
+          Resizable using<br>
+          &quot;e&quot;, &quot;s&quot; and &quot;se&quot; handles
+        </sm3-resizable>
+      </div>
+
+      <div class="demo" id="demo3">
+        <h1>Demo 3</h1>
+        <sm3-resizable min-width="75" min-height="75" max-width="250" max-height="250">
+          Restricted Resizing
+        </sm3-resizable>
+      </div>
+
+      <div class="demo" id="demo4">
+        <h1>Demo 4</h1>
+        <sm3-resizable>
+          Large Handles
+        </sm3-resizable>
+      </div>
+
+      <div class="demo" id="demo5">
+        <h1>Demo 5</h1>
+        <sm3-resizable>
+          Different Handles Sizes
+        </sm3-resizable>
+      </div>
+
+      <div class="demo" id="demo6">
+        <h1>Demo 6</h1>
+        <sm3-resizable>
+          Constrained to Parent
+        </sm3-resizable>
+      </div>
+
+      <div class="demo" id="demo7">
+        <h1>Demo 7</h1>
+        <div class="container"></div>
+        <sm3-resizable>
+          Constrained to Sibling
+        </sm3-resizable>
+      </div>
+
+    </div>
+
+    <script>
+      // demo 6 container
+      var demo6resizer = document.querySelector('#demo6 sm3-resizable');
+      demo6resizer.container = document.querySelector('#demo6');
+
+      // demo 7 container
+      var demo7resizer = document.querySelector('#demo7 sm3-resizable');
+      demo7resizer.container = document.querySelector('#demo7 .container');
+
+      // toggle handle visiablity
+      var showHandles = false;
+
+      var btn_toggleHandles = document.querySelector('#toggleHandles');
+
+      btn_toggleHandles.addEventListener('click', function() {
+        showHandles = !showHandles;
+
+        btn_toggleHandles.textContent = showHandles ? 'Hide Handles' : 'Show Handles';
+
+        var resizers = document.querySelectorAll('sm3-resizable');
+        for (var i = 0; i < resizers.length; i++) {
+          resizers[i].toggleClass('show-handles', showHandles);
+        }
+        Polymer.updateStyles();
+      });
+    </script>
+
+  </body>
+</html>

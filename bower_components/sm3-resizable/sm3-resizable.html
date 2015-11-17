@@ -1,0 +1,511 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+
+<!--
+An element that can be resized by dragging at its edges.
+
+Example:<br>
+Allow resizing by dragging any edge/corner.
+
+    <sm3-resizable>Content</sm3-resizable>
+
+Example:<br>
+Only resize by dragging the south and east edges and the south-east corner.
+
+    <sm3-resizable handle-s handle-e handle-se>Content</sm3-resizable>
+
+@group SM3 Elements
+@element sm3-resizable
+@demo demo/index.html
+@hero hero.svg
+-->
+<dom-module id="sm3-resizable">
+
+  <template>
+    <style>
+      :host {
+        display: block;
+        position: relative;
+        --sm3-resizable-handle-size: 10px;
+        @apply(--sm3-resizable);
+      }
+      #content-container {
+        height: 100%;
+        width: 100%;
+        box-sizing: border-box;
+        overflow: var(--sm3-resizable-content-overflow, auto);
+        @apply(--sm3-resizable-content);
+      }
+      .handle {
+        position: absolute;
+        box-sizing: border-box;
+        @apply(--sm3-resizable-handle);
+      }
+      .handle.n {
+        height: var(--sm3-resizable-handle-n-size, --sm3-resizable-handle-size);
+      }
+      .handle.e {
+        width: var(--sm3-resizable-handle-e-size, --sm3-resizable-handle-size);
+      }
+      .handle.s {
+        height: var(--sm3-resizable-handle-s-size, --sm3-resizable-handle-size);
+      }
+      .handle.w {
+        width: var(--sm3-resizable-handle-w-size, --sm3-resizable-handle-size);
+      }
+      .handle.n:not(.w):not(.e) {
+        cursor: n-resize;
+        top: calc(var(--sm3-resizable-handle-n-size, --sm3-resizable-handle-size) / -2);
+        right: 0;
+        bottom: auto;
+        left: 0;
+        @apply(--sm3-resizable-handle-edge);
+        @apply(--sm3-resizable-handle-n);
+      }
+      .handle.e:not(.n):not(.s) {
+        cursor: e-resize;
+        top: 0;
+        right: calc(var(--sm3-resizable-handle-e-size, --sm3-resizable-handle-size) / -2);
+        bottom: 0;
+        left: auto;
+        @apply(--sm3-resizable-handle-edge);
+        @apply(--sm3-resizable-handle-e);
+      }
+      .handle.s:not(.w):not(.e) {
+        cursor: s-resize;
+        top: auto;
+        right: 0;
+        bottom: calc(var(--sm3-resizable-handle-s-size, --sm3-resizable-handle-size) / -2);
+        left: 0;
+        @apply(--sm3-resizable-handle-edge);
+        @apply(--sm3-resizable-handle-s);
+      }
+      .handle.w:not(.n):not(.s) {
+        cursor: w-resize;
+        top: 0;
+        right: auto;
+        bottom: 0;
+        left: calc(var(--sm3-resizable-handle-w-size, --sm3-resizable-handle-size) / -2);
+        @apply(--sm3-resizable-handle-edge);
+        @apply(--sm3-resizable-handle-w);
+      }
+      .handle.n.w {
+        cursor: nw-resize;
+        top: calc(var(--sm3-resizable-handle-n-size, --sm3-resizable-handle-size) / -2);
+        right: auto;
+        bottom: auto;
+        left: calc(var(--sm3-resizable-handle-w-size, --sm3-resizable-handle-size) / -2);
+        @apply(--sm3-resizable-handle-corner);
+        @apply(--sm3-resizable-handle-nw);
+      }
+      .handle.n.e {
+        cursor: ne-resize;
+        top: calc(var(--sm3-resizable-handle-n-size, --sm3-resizable-handle-size) / -2);
+        right: calc(var(--sm3-resizable-handle-e-size, --sm3-resizable-handle-size) / -2);
+        bottom: auto;
+        left: auto;
+        @apply(--sm3-resizable-handle-corner);
+        @apply(--sm3-resizable-handle-ne);
+      }
+      .handle.s.w {
+        cursor: sw-resize;
+        top: auto;
+        right: auto;
+        bottom: calc(var(--sm3-resizable-handle-s-size, --sm3-resizable-handle-size) / -2);
+        left: calc(var(--sm3-resizable-handle-w-size, --sm3-resizable-handle-size) / -2);
+        @apply(--sm3-resizable-handle-corner);
+        @apply(--sm3-resizable-handle-sw);
+      }
+      .handle.s.e {
+        cursor: se-resize;
+        top: auto;
+        right: calc(var(--sm3-resizable-handle-e-size, --sm3-resizable-handle-size) / -2);
+        bottom: calc(var(--sm3-resizable-handle-s-size, --sm3-resizable-handle-size) / -2);
+        left: auto;
+        @apply(--sm3-resizable-handle-corner);
+        @apply(--sm3-resizable-handle-se);
+      }
+    </style>
+    <div id="content-container">
+      <content></content>
+    </div>
+    <div hidden="{{disabled}}">
+      <div class="handle n" data-handle="n" on-track="_onHandleTrack" hidden="{{!handleN}}"></div>
+      <div class="handle e" data-handle="e" on-track="_onHandleTrack" hidden="{{!handleE}}"></div>
+      <div class="handle s" data-handle="s" on-track="_onHandleTrack" hidden="{{!handleS}}"></div>
+      <div class="handle w" data-handle="w" on-track="_onHandleTrack" hidden="{{!handleW}}"></div>
+      <div class="handle n w" data-handle="nw" on-track="_onHandleTrack" hidden="{{!handleNw}}"></div>
+      <div class="handle n e" data-handle="ne" on-track="_onHandleTrack" hidden="{{!handleNe}}"></div>
+      <div class="handle s w" data-handle="sw" on-track="_onHandleTrack" hidden="{{!handleSw}}"></div>
+      <div class="handle s e" data-handle="se" on-track="_onHandleTrack" hidden="{{!handleSe}}"></div>
+    </div>
+  </template>
+
+</dom-module>
+
+<script>
+
+  Polymer({
+
+    is: 'sm3-resizable',
+
+    properties: {
+
+      /**
+       * The minimum width of this element.
+       */
+      minWidth: {
+        type: Number,
+        value: 32,
+        notify: true,
+        observer: '_enforceRestrictions'
+      },
+
+      /**
+       * The minimum height of this element.
+       */
+      minHeight: {
+        type: Number,
+        value: 32,
+        notify: true,
+        observer: '_enforceRestrictions'
+      },
+
+      /**
+       * The maximum width of this element.
+       * undefined => no max
+       */
+      maxWidth: {
+        type: Number,
+        notify: true,
+        observer: '_enforceRestrictions'
+      },
+
+      /**
+       * The maximum height of this element.
+       */
+      maxHeight: {
+        type: Number,
+        notify: true,
+        observer: '_enforceRestrictions'
+      },
+
+      /**
+       * If `handleNw` is true, this element can be resize by dragging the north-west corner.
+       */
+      handleNw: {
+        type: Boolean,
+        value: false,
+        notify: true
+      },
+
+      /**
+       * If `handleN` is true, this element can be resize by dragging the north edge.
+       */
+      handleN: {
+        type: Boolean,
+        value: false,
+        notify: true
+      },
+
+      /**
+       * If `handleNe` is true, this element can be resize by dragging the north-east corner.
+       */
+      handleNe: {
+        type: Boolean,
+        value: false,
+        notify: true
+      },
+
+      /**
+       * If `handleW` is true, this element can be resize by dragging the west edge.
+       */
+      handleW: {
+        type: Boolean,
+        value: false,
+        notify: true
+      },
+
+      /**
+       * If `handleE` is true, this element can be resize by dragging the east edge.
+       */
+      handleE: {
+        type: Boolean,
+        value: false,
+        notify: true
+      },
+
+      /**
+       * If `handleSw` is true, this element can be resize by dragging the south-west corner.
+       */
+      handleSw: {
+        type: Boolean,
+        value: false,
+        notify: true
+      },
+
+      /**
+       * If `handleS` is true, this element can be resize by dragging the south edge.
+       */
+      handleS: {
+        type: Boolean,
+        value: false,
+        notify: true
+      },
+
+      /**
+       * If `handleSe` is true, this element can be resize by dragging the south-east corner.
+       */
+      handleSe: {
+        type: Boolean,
+        value: false,
+        notify: true
+      },
+
+      /**
+       * If `container` is set to a HTML element, this element will be constrained within it.
+       */
+      container: {
+        type: Object,
+        value: null,
+        observer: '_enforceRestrictions'
+      },
+
+      /**
+       * Whether or not this element is disabled.
+       */
+      disabled: {
+        type: Boolean,
+        value: false,
+        notify: true,
+        reflectToAttribute: true,
+        observer: '_onDisabledChanged'
+      },
+
+      /**
+       * The element's translateX.
+       * (needed due to not easily being able to call something like `this.getTranslateX()`)
+       */
+      _translateX: {
+        type: Number,
+        value: 0
+      },
+
+      /**
+       * The element's translateY.
+       * (needed due to not easily being able to call something like `this.getTranslateY()`)
+       */
+      _translateY: {
+        type: Number,
+        value: 0
+      },
+
+      /**
+       * Stores original values for width, height, translateX, translateY, left and top.
+       * Needed by the tracking handler.
+       */
+      _savedData: Object
+    },
+
+    ready: function() {
+      // if all handles are false
+      if (!(this.handleNw || this.handleN || this.handleNe || this.handleW
+        || this.handleE || this.handleSw || this.handleS || this.handleSe)) {
+        // set them all to true
+        this.handleNw = this.handleN = this.handleNe = this.handleW =
+        this.handleE = this.handleSw = this.handleS = this.handleSe = true;
+      }
+    },
+
+    attached: function() {
+      this._enforceRestrictions();
+    },
+
+    /**
+     * Called when tracking on a handle.
+     *
+     * @param {Event} e
+     */
+    _onHandleTrack: function(e) {
+      window.getSelection().removeAllRanges();  // clear any selections
+
+      switch (e.detail.state) {
+        case 'start':
+          this._saveCurrentData();
+          break;
+
+        case 'track':
+          var handle = this._getHandleData(e.currentTarget.dataset.handle);
+
+          // get the new desired dimesions of the element
+          var dim = this._getDimensionsWithRestrictionsEnforced(
+            this._savedData.width  + handle.x * e.detail.dx,
+            this._savedData.height + handle.y * e.detail.dy);
+
+          // translate the element if needed
+          var translateX = this._savedData.translateX + ((handle.x < 0) ? (this._savedData.width  - dim.width)  : 0);
+          var translateY = this._savedData.translateY + ((handle.y < 0) ? (this._savedData.height - dim.height) : 0);
+
+          // apply any container restrictions
+          var transDim = this._getContainerConstraints(dim.width, dim.height, translateX, translateY);
+
+          // apply the new style
+          this._updateStyle(transDim.width, transDim.height, transDim.translateX, transDim.translateY);
+          break;
+
+        case 'end':
+
+          break;
+      }
+    },
+
+    /**
+     * Save the the current data for this element.
+     */
+    _saveCurrentData: function() {
+      var myBCR = this.getBoundingClientRect();
+      this._savedData = {
+        width: this.clientWidth,
+        height: this.clientHeight,
+        translateX: this._translateX,
+        translateY: this._translateY,
+        left: myBCR.left - this._translateX,
+        top: myBCR.top - this._translateY
+      };
+    },
+
+    /**
+     * Get the movemenet direction of the given handle.
+     *
+     * @param {string} handle - One of ['n', 'e', 's', 'w', 'nw', 'ne', 'sw', 'se']
+     * @return {{x: Number, y: Number}}
+     */
+    _getHandleData: function(handle) {
+      var x, y;
+      switch (handle) {
+        case 'n' : x=-0; y=-1; break;
+        case 'e' : x= 1; y= 0; break;
+        case 's' : x= 0; y= 1; break;
+        case 'w' : x=-1; y= 0; break;
+        case 'nw': x=-1; y=-1; break;
+        case 'ne': x= 1; y=-1; break;
+        case 'sw': x=-1; y= 1; break;
+        case 'se': x= 1; y= 1; break;
+        default:
+          console.error('invalid handle.');
+      }
+      return {x: x, y: y};
+    },
+
+    /**
+     * Restriction the given width and height using `minWidth`, `minHeight`, `maxWidth` and `maxHeight`.
+     * Returns those new values.
+     *
+     * @param {Number} width
+     * @param {Number} height
+     * @return {{width: Number, height: Number}}
+     */
+    _getDimensionsWithRestrictionsEnforced: function(width, height) {
+      if (this.minWidth) {
+        width = Math.max(width, this.minWidth);
+      }
+      if (this.minHeight) {
+        height = Math.max(height, this.minHeight);
+      }
+      if (this.maxWidth) {
+        width = Math.min(width, this.maxWidth);
+      }
+      if (this.maxHeight) {
+        height = Math.min(height, this.maxHeight);
+      }
+
+      return {width: width, height: height};
+    },
+
+    /**
+     * Restriction the given paramaters to the `container`.
+     * Returns those new values.
+     *
+     * @param {Number} width
+     * @param {Number} height
+     * @param {Number} translateX
+     * @param {Number} translateY
+     * @return {{width: Number, height: Number, translateX: Number, translateY: Number}}
+     */
+    _getContainerConstraints: function(width, height, translateX, translateY) {
+      if (this.container) {
+        var myBCR = this.getBoundingClientRect();
+        var conBCR = this.container.getBoundingClientRect();
+        var tx = translateX;
+        var ty = translateY;
+
+        translateX = Math.max(tx, Math.round(conBCR.left-this._savedData.left));
+        translateY = Math.max(ty, Math.round(conBCR.top -this._savedData.top ));
+
+        width =  Math.min(width,  width  - (translateX - tx), conBCR.width -(myBCR.left-conBCR.left));
+        height = Math.min(height, height - (translateY - ty), conBCR.height-(myBCR.top -conBCR.top ));
+      }
+
+      return {width: width, height: height, translateX: translateX, translateY: translateY};
+    },
+
+    /**
+     * Enforce the restrictions on this element.
+     */
+    _enforceRestrictions: function() {
+      // don't do anything if not attached
+      if (!this.isAttached) {
+        return;
+      }
+      // wait for first render so that the actual client size is known
+      setTimeout(function() {
+        if (this._savedData === undefined) {
+          this._saveCurrentData();
+        }
+
+        // apply restrictions
+        var dim = this._getDimensionsWithRestrictionsEnforced(this.clientWidth, this.clientHeight);
+        var transDim = this._getContainerConstraints(dim.width, dim.height, this._translateX, this._translateY);
+
+        this._updateStyle(transDim.width, transDim.height, transDim.translateX, transDim.translateY);
+      }.bind(this), 0);
+    },
+
+    /**
+     * Called when `disabled` is changed.
+     */
+    _onDisabledChanged: function() {
+      if (this.disabled) {
+        this.style.width = 'auto';
+        this.style.height = 'auto';
+        this.transform('translate(0px,0px)');
+      }
+      else {
+        this._enforceRestrictions();
+      }
+    },
+
+    /**
+     * Update the style being applied to this element
+     */
+    _updateStyle: function(width, height, translateX, translateY) {
+      this.style.width = width + 'px';
+      this.style.height = height + 'px';
+      this.transform('translate('+translateX+'px,'+translateY+'px)');
+
+      // save the translation
+      this._translateX = translateX;
+      this._translateY = translateY;
+    }
+
+  });
+
+</script>
