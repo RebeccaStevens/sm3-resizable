@@ -162,9 +162,9 @@ Only resize by dragging the south and east edges and the south-east corner.
        */
       minWidth: {
         type: Number,
-        value: 16,
+        value: 32,
         notify: true,
-        observer: '_updateDimensionRestrictions'
+        observer: '_enforceRestrictions'
       },
 
       /**
@@ -172,9 +172,9 @@ Only resize by dragging the south and east edges and the south-east corner.
        */
       minHeight: {
         type: Number,
-        value: 16,
+        value: 32,
         notify: true,
-        observer: '_updateDimensionRestrictions'
+        observer: '_enforceRestrictions'
       },
 
       /**
@@ -184,7 +184,7 @@ Only resize by dragging the south and east edges and the south-east corner.
       maxWidth: {
         type: Number,
         notify: true,
-        observer: '_updateDimensionRestrictions'
+        observer: '_enforceRestrictions'
       },
 
       /**
@@ -193,7 +193,7 @@ Only resize by dragging the south and east edges and the south-east corner.
       maxHeight: {
         type: Number,
         notify: true,
-        observer: '_updateDimensionRestrictions'
+        observer: '_enforceRestrictions'
       },
 
       /**
@@ -269,11 +269,12 @@ Only resize by dragging the south and east edges and the south-east corner.
       },
 
       /**
-       * If `container` is set to a parent HTML element of this element, this element will be constrained within it.
+       * If `container` is set to a HTML element, this element will be constrained within it.
        */
       container: {
         type: Object,
-        value: null
+        value: null,
+        observer: '_enforceRestrictions'
       },
 
       /**
@@ -295,10 +296,10 @@ Only resize by dragging the south and east edges and the south-east corner.
       },
 
       /**
-       * Stores original values for width, height, translateX and translateY.
+       * Stores original values for width, height, translateX, translateY, left and top.
        * Needed by the tracking handler.
        */
-      _oData: Object
+      _savedData: Object
     },
 
     ready: function() {
@@ -312,7 +313,7 @@ Only resize by dragging the south and east edges and the south-east corner.
     },
 
     attached: function() {
-      this._updateDimensionRestrictions();
+      this._enforceRestrictions();
     },
 
     /**
@@ -325,12 +326,7 @@ Only resize by dragging the south and east edges and the south-east corner.
 
       switch (e.detail.state) {
         case 'start':
-          this._oData = {
-            width: this.clientWidth,
-            height: this.clientHeight,
-            translateX: this._translateX,
-            translateY: this._translateY
-          };
+          this._saveCurrentData();
           break;
 
         case 'track':
@@ -338,36 +334,39 @@ Only resize by dragging the south and east edges and the south-east corner.
 
           // get the new desired dimesions of the element
           var dim = this._getDimensionsWithRestrictionsEnforced(
-            this._oData.width  + handle.x * e.detail.dx,
-            this._oData.height + handle.y * e.detail.dy);
+            this._savedData.width  + handle.x * e.detail.dx,
+            this._savedData.height + handle.y * e.detail.dy);
 
           // translate the element if needed
-          this._translateX = this._oData.translateX + ((handle.x < 0) ? (this._oData.width  - dim.width)  : 0);
-          this._translateY = this._oData.translateY + ((handle.y < 0) ? (this._oData.height - dim.height) : 0);
+          var translateX = this._savedData.translateX + ((handle.x < 0) ? (this._savedData.width  - dim.width)  : 0);
+          var translateY = this._savedData.translateY + ((handle.y < 0) ? (this._savedData.height - dim.height) : 0);
 
           // apply any container restrictions
-          if(this.container) {
-            var style = window.getComputedStyle(this);
-            var tx = this._translateX;
-            var ty = this._translateY;
-
-            this._translateX = Math.max(tx, -Number.parseInt(style.left, 10));
-            this._translateY = Math.max(ty, -Number.parseInt(style.top, 10));
-
-            dim.width = Math.min(dim.width, dim.width - (this._translateX - tx));
-            dim.height = Math.min(dim.height, dim.height - (this._translateY - ty));
-          }
+          var transDim = this._getContainerConstraints(dim.width, dim.height, translateX, translateY);
 
           // apply the new style
-          this.style.width = dim.width + 'px';
-          this.style.height = dim.height + 'px';
-          this.transform('translate('+this._translateX+'px,'+this._translateY+'px)');
+          this._updateStyle(transDim.width, transDim.height, transDim.translateX, transDim.translateY);
           break;
 
         case 'end':
 
           break;
       }
+    },
+
+    /**
+     * Save the the current data for this element.
+     */
+    _saveCurrentData: function() {
+      var myBCR = this.getBoundingClientRect();
+      this._savedData = {
+        width: this.clientWidth,
+        height: this.clientHeight,
+        translateX: this._translateX,
+        translateY: this._translateY,
+        left: myBCR.left - this._translateX,
+        top: myBCR.top - this._translateY
+      };
     },
 
     /**
@@ -395,17 +394,13 @@ Only resize by dragging the south and east edges and the south-east corner.
 
     /**
      * Restriction the given width and height using `minWidth`, `minHeight`, `maxWidth` and `maxHeight`.
+     * Returns those new values.
      *
      * @param {Number} width
      * @param {Number} height
      * @return {{width: Number, height: Number}}
      */
     _getDimensionsWithRestrictionsEnforced: function(width, height) {
-      if(this.container) {
-        width = Math.min(width, this.container.clientWidth - this.offsetLeft - this._translateX);
-        height = Math.min(height, this.container.clientHeight - this.offsetTop - this._translateY);
-      }
-
       if (this.minWidth) {
         width = Math.max(width, this.minWidth);
       }
@@ -423,16 +418,62 @@ Only resize by dragging the south and east edges and the south-east corner.
     },
 
     /**
-     * Update the restrictions on the dimension of this element.
+     * Restriction the given paramaters to the `container`.
+     * Returns those new values.
+     *
+     * @param {Number} width
+     * @param {Number} height
+     * @param {Number} translateX
+     * @param {Number} translateY
+     * @return {{width: Number, height: Number, translateX: Number, translateY: Number}}
      */
-    _updateDimensionRestrictions: function() {
+    _getContainerConstraints: function(width, height, translateX, translateY) {
+      if (this.container) {
+        var myBCR = this.getBoundingClientRect();
+        var conBCR = this.container.getBoundingClientRect();
+        var tx = translateX;
+        var ty = translateY;
+
+        translateX = Math.max(tx, Math.round(conBCR.left-this._savedData.left));
+        translateY = Math.max(ty, Math.round(conBCR.top -this._savedData.top ));
+
+        width =  Math.min(width,  width  - (translateX - tx), conBCR.width -(myBCR.left-conBCR.left));
+        height = Math.min(height, height - (translateY - ty), conBCR.height-(myBCR.top -conBCR.top ));
+      }
+
+      return {width: width, height: height, translateX: translateX, translateY: translateY};
+    },
+
+    /**
+     * Enforce the restrictions on this element.
+     */
+    _enforceRestrictions: function() {
       // don't do anything if not attached
       if (!this.isAttached) {
         return;
       }
+      if (this._savedData === undefined) {
+        this._saveCurrentData();
+      }
+
+      // apply restrictions
       var dim = this._getDimensionsWithRestrictionsEnforced(this.clientWidth, this.clientHeight);
-      this.style.width = dim.width + 'px';
-      this.style.height = dim.height + 'px';
+      var transDim = this._getContainerConstraints(dim.width, dim.height, this._translateX, this._translateY);
+
+      this._updateStyle(transDim.width, transDim.height, transDim.translateX, transDim.translateY);
+    },
+
+    /**
+     * Update the style being applied to this element
+     */
+    _updateStyle: function(width, height, translateX, translateY) {
+      this.style.width = width + 'px';
+      this.style.height = height + 'px';
+      this.transform('translate('+translateX+'px,'+translateY+'px)');
+
+      // save the translation
+      this._translateX = translateX;
+      this._translateY = translateY;
     }
 
   });
