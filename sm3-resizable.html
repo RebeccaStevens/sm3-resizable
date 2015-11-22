@@ -328,8 +328,29 @@ Only resize by dragging the south and east edges and the south-east corner.
     attached: function() {
       // wait for first render so that the actual client size is known
       setTimeout(function() {
+        // make sure there is data to use
+        if (this._savedData === undefined) {
+          this._saveCurrentData();
+        }
+
         this.reinforceRestrictions();
       }.bind(this), 0);
+    },
+
+    /**
+     * Reinforce the restrictions on this element.
+     */
+    reinforceRestrictions: function() {
+      // don't do anything if not attached or there is no saved data
+      if (!this.isAttached || !this._savedData) {
+        return;
+      }
+
+      // apply restrictions
+      var dim = this._getDimensionsWithRestrictionsEnforced(this.clientWidth, this.clientHeight);
+      var transDim = this._getContainerConstraints(dim.width, dim.height, this._translateX, this._translateY);
+
+      this._updateStyle(transDim.width, transDim.height, transDim.translateX, transDim.translateY);
     },
 
     /**
@@ -458,27 +479,6 @@ Only resize by dragging the south and east edges and the south-east corner.
       }
 
       return {width: width, height: height, translateX: translateX, translateY: translateY};
-    },
-
-    /**
-     * Reinforce the restrictions on this element.
-     */
-    reinforceRestrictions: function() {
-      // don't do anything if not attached
-      if (!this.isAttached) {
-        return;
-      }
-
-      // make sure there is data to use
-      if (this._savedData === undefined) {
-        this._saveCurrentData();
-      }
-
-      // apply restrictions
-      var dim = this._getDimensionsWithRestrictionsEnforced(this.clientWidth, this.clientHeight);
-      var transDim = this._getContainerConstraints(dim.width, dim.height, this._translateX, this._translateY);
-
-      this._updateStyle(transDim.width, transDim.height, transDim.translateX, transDim.translateY);
     },
 
     /**
