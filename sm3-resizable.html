@@ -166,7 +166,7 @@ Only resize by dragging the south and east edges and the south-east corner.
         type: Number,
         value: 32,
         notify: true,
-        observer: '_enforceRestrictions'
+        observer: 'reinforceRestrictions'
       },
 
       /**
@@ -176,7 +176,7 @@ Only resize by dragging the south and east edges and the south-east corner.
         type: Number,
         value: 32,
         notify: true,
-        observer: '_enforceRestrictions'
+        observer: 'reinforceRestrictions'
       },
 
       /**
@@ -186,7 +186,7 @@ Only resize by dragging the south and east edges and the south-east corner.
       maxWidth: {
         type: Number,
         notify: true,
-        observer: '_enforceRestrictions'
+        observer: 'reinforceRestrictions'
       },
 
       /**
@@ -195,7 +195,7 @@ Only resize by dragging the south and east edges and the south-east corner.
       maxHeight: {
         type: Number,
         notify: true,
-        observer: '_enforceRestrictions'
+        observer: 'reinforceRestrictions'
       },
 
       /**
@@ -276,7 +276,7 @@ Only resize by dragging the south and east edges and the south-east corner.
       container: {
         type: Object,
         value: null,
-        observer: '_enforceRestrictions'
+        observer: 'reinforceRestrictions'
       },
 
       /**
@@ -326,7 +326,10 @@ Only resize by dragging the south and east edges and the south-east corner.
     },
 
     attached: function() {
-      this._enforceRestrictions();
+      // wait for first render so that the actual client size is known
+      setTimeout(function() {
+        this.reinforceRestrictions();
+      }.bind(this), 0);
     },
 
     /**
@@ -458,25 +461,24 @@ Only resize by dragging the south and east edges and the south-east corner.
     },
 
     /**
-     * Enforce the restrictions on this element.
+     * Reinforce the restrictions on this element.
      */
-    _enforceRestrictions: function() {
+    reinforceRestrictions: function() {
       // don't do anything if not attached
       if (!this.isAttached) {
         return;
       }
-      // wait for first render so that the actual client size is known
-      setTimeout(function() {
-        if (this._savedData === undefined) {
-          this._saveCurrentData();
-        }
 
-        // apply restrictions
-        var dim = this._getDimensionsWithRestrictionsEnforced(this.clientWidth, this.clientHeight);
-        var transDim = this._getContainerConstraints(dim.width, dim.height, this._translateX, this._translateY);
+      // make sure there is data to use
+      if (this._savedData === undefined) {
+        this._saveCurrentData();
+      }
 
-        this._updateStyle(transDim.width, transDim.height, transDim.translateX, transDim.translateY);
-      }.bind(this), 0);
+      // apply restrictions
+      var dim = this._getDimensionsWithRestrictionsEnforced(this.clientWidth, this.clientHeight);
+      var transDim = this._getContainerConstraints(dim.width, dim.height, this._translateX, this._translateY);
+
+      this._updateStyle(transDim.width, transDim.height, transDim.translateX, transDim.translateY);
     },
 
     /**
@@ -489,7 +491,7 @@ Only resize by dragging the south and east edges and the south-east corner.
         this.transform('translate(0px,0px)');
       }
       else {
-        this._enforceRestrictions();
+        this.reinforceRestrictions();
       }
     },
 
