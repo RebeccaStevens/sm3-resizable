@@ -326,13 +326,8 @@ Only resize by dragging the south and east edges and the south-east corner.
     },
 
     attached: function() {
-      // wait for first render so that the actual client size is known
+      // wait until after first render so that the actual client size is known
       setTimeout(function() {
-        // make sure there is data to use
-        if (this._savedData === undefined) {
-          this._saveCurrentData();
-        }
-
         this.reinforceRestrictions();
       }.bind(this), 0);
     },
@@ -341,10 +336,13 @@ Only resize by dragging the south and east edges and the south-east corner.
      * Reinforce the restrictions on this element.
      */
     reinforceRestrictions: function() {
-      // don't do anything if not attached or there is no saved data
-      if (!this.isAttached || !this._savedData) {
+      // don't do anything if not attached
+      if (!this.isAttached) {
         return;
       }
+
+      // update the saved data
+      this._saveCurrentData();
 
       // apply restrictions
       var dim = this._getDimensionsWithRestrictionsEnforced(this.clientWidth, this.clientHeight);
