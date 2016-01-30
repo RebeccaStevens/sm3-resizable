@@ -34,6 +34,8 @@ Only resize by dragging the south and east edges and the south-east corner.
       :host {
         display: block;
         position: relative;
+        min-width: 16px;
+        min-height: 16px;
         --sm3-resizable-handle-size: 10px;
         @apply(--sm3-resizable);
       }
@@ -155,48 +157,15 @@ Only resize by dragging the south and east edges and the south-east corner.
 
   Polymer({
 
+    /**
+     * Fired when the element is resized.
+     *
+     * @event sm3-resizable-resized
+     */
+
     is: 'sm3-resizable',
 
     properties: {
-
-      /**
-       * The minimum width of this element.
-       */
-      minWidth: {
-        type: Number,
-        value: 32,
-        notify: true,
-        observer: 'reinforceRestrictions'
-      },
-
-      /**
-       * The minimum height of this element.
-       */
-      minHeight: {
-        type: Number,
-        value: 32,
-        notify: true,
-        observer: 'reinforceRestrictions'
-      },
-
-      /**
-       * The maximum width of this element.
-       * undefined => no max
-       */
-      maxWidth: {
-        type: Number,
-        notify: true,
-        observer: 'reinforceRestrictions'
-      },
-
-      /**
-       * The maximum height of this element.
-       */
-      maxHeight: {
-        type: Number,
-        notify: true,
-        observer: 'reinforceRestrictions'
-      },
 
       /**
        * If `handleNw` is true, this element can be resize by dragging the north-west corner.
@@ -345,10 +314,9 @@ Only resize by dragging the south and east edges and the south-east corner.
       this._saveCurrentData();
 
       // apply restrictions
-      var dim = this._getDimensionsWithRestrictionsEnforced(this.clientWidth, this.clientHeight);
-      var transDim = this._getContainerConstraints(dim.width, dim.height, this._translateX, this._translateY);
+      var transDim = this._getContainerConstraints(this.clientWidth, this.clientHeight, this._translateX, this._translateY);
 
-      this._updateStyle(transDim.width, transDim.height, transDim.translateX, transDim.translateY);
+      this._resize(transDim.width, transDim.height, transDim.translateX, transDim.translateY);
     },
 
     /**
@@ -368,9 +336,10 @@ Only resize by dragging the south and east edges and the south-east corner.
           var handle = this._getHandleData(e.currentTarget.dataset.handle);
 
           // get the new desired dimesions of the element
-          var dim = this._getDimensionsWithRestrictionsEnforced(
-            this._savedData.width  + handle.x * e.detail.dx,
-            this._savedData.height + handle.y * e.detail.dy);
+          var dim = {
+            width: this._savedData.width  + handle.x * e.detail.dx,
+            height: this._savedData.height + handle.y * e.detail.dy
+          };
 
           // translate the element if needed
           var translateX = this._savedData.translateX + ((handle.x < 0) ? (this._savedData.width  - dim.width)  : 0);
@@ -380,7 +349,7 @@ Only resize by dragging the south and east edges and the south-east corner.
           var transDim = this._getContainerConstraints(dim.width, dim.height, translateX, translateY);
 
           // apply the new style
-          this._updateStyle(transDim.width, transDim.height, transDim.translateX, transDim.translateY);
+          this._resize(transDim.width, transDim.height, transDim.translateX, transDim.translateY);
           break;
 
         case 'end':
@@ -428,31 +397,6 @@ Only resize by dragging the south and east edges and the south-east corner.
     },
 
     /**
-     * Restriction the given width and height using `minWidth`, `minHeight`, `maxWidth` and `maxHeight`.
-     * Returns those new values.
-     *
-     * @param {Number} width
-     * @param {Number} height
-     * @return {{width: Number, height: Number}}
-     */
-    _getDimensionsWithRestrictionsEnforced: function(width, height) {
-      if (this.minWidth) {
-        width = Math.max(width, this.minWidth);
-      }
-      if (this.minHeight) {
-        height = Math.max(height, this.minHeight);
-      }
-      if (this.maxWidth) {
-        width = Math.min(width, this.maxWidth);
-      }
-      if (this.maxHeight) {
-        height = Math.min(height, this.maxHeight);
-      }
-
-      return {width: width, height: height};
-    },
-
-    /**
      * Restriction the given paramaters to the `container`.
      * Returns those new values.
      *
@@ -494,9 +438,28 @@ Only resize by dragging the south and east edges and the south-east corner.
     },
 
     /**
-     * Update the style being applied to this element
+     * Update the style being applied to this element.
      */
-    _updateStyle: function(width, height, translateX, translateY) {
+    _resize: function(width, height, translateX, translateY) {
+      var style = getComputedStyle(this);
+      var minWidth = Number.parseFloat(style.minWidth);
+      var minHeight = Number.parseFloat(style.minHeight);
+      var maxWidth = Number.parseFloat(style.maxWidth);
+      var maxHeight = Number.parseFloat(style.maxHeight);
+
+      if (minWidth) {
+        width = Math.max(width, minWidth);
+      }
+      if (minHeight) {
+        height = Math.max(height, minHeight);
+      }
+      if (maxWidth) {
+        width = Math.min(width, maxWidth);
+      }
+      if (maxHeight) {
+        height = Math.min(height, maxHeight);
+      }
+
       this.style.width = width + 'px';
       this.style.height = height + 'px';
       this.transform('translate('+translateX+'px,'+translateY+'px)');
@@ -504,6 +467,11 @@ Only resize by dragging the south and east edges and the south-east corner.
       // save the translation
       this._translateX = translateX;
       this._translateY = translateY;
+
+      this.fire('sm3-resizable-resized', {
+        width: width,
+        height: height
+      });
     }
 
   });
