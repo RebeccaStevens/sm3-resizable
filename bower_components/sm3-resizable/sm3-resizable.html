@@ -18,9 +18,33 @@ Allow resizing by dragging any edge/corner.
     <sm3-resizable>Content</sm3-resizable>
 
 Example:<br>
-Only resize by dragging the south and east edges and the south-east corner.
+Can only resized by dragging the south or east edge or the south-east corner.
 
     <sm3-resizable handle-s handle-e handle-se>Content</sm3-resizable>
+
+### Styling
+
+The following custom properties and mixins are available for styling:
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--sm3-resizable-handle-size` | The size of the handles used to resize the element | `10px`
+`--sm3-resizable-handle-n-size` | The size of the north handle used to resize the element | `--sm3-resizable-handle-size`
+`--sm3-resizable-handle-s-size` | The size of the south handle used to resize the element | `--sm3-resizable-handle-size`
+`--sm3-resizable-handle-e-size` | The size of the east handle used to resize the element | `--sm3-resizable-handle-size`
+`--sm3-resizable-handle-w-size` | The size of the west handle used to resize the element | `--sm3-resizable-handle-size`
+`--sm3-resizable-content` | A mixin that is applied to the element's content's container | `{}`
+`--sm3-resizable-handle` | A mixin that is applied to all handles | `{}`
+`--sm3-resizable-handle-edge` | A mixin that is applied to edge handles | `{}`
+`--sm3-resizable-handle-corner` | A mixin that is applied to corner handles | `{}`
+`--sm3-resizable-handle-n` | A mixin that is applied to the north handle | `{}`
+`--sm3-resizable-handle-e` | A mixin that is applied to the east handle | `{}`
+`--sm3-resizable-handle-s` | A mixin that is applied to the south handle | `{}`
+`--sm3-resizable-handle-w` | A mixin that is applied to the west handle | `{}`
+`--sm3-resizable-handle-ne` | A mixin that is applied to the north east handle | `{}`
+`--sm3-resizable-handle-nw` | A mixin that is applied to the north west handle | `{}`
+`--sm3-resizable-handle-se` | A mixin that is applied to the south east handle | `{}`
+`--sm3-resizable-handle-sw` | A mixin that is applied to the south west handle | `{}`
 
 @group SM3 Elements
 @element sm3-resizable
@@ -34,6 +58,8 @@ Only resize by dragging the south and east edges and the south-east corner.
       :host {
         display: block;
         position: relative;
+        min-width: 16px;
+        min-height: 16px;
         --sm3-resizable-handle-size: 10px;
         @apply(--sm3-resizable);
       }
@@ -41,7 +67,7 @@ Only resize by dragging the south and east edges and the south-east corner.
         height: 100%;
         width: 100%;
         box-sizing: border-box;
-        overflow: var(--sm3-resizable-content-overflow, auto);
+        overflow: auto;
         @apply(--sm3-resizable-content);
       }
       .handle {
@@ -155,48 +181,15 @@ Only resize by dragging the south and east edges and the south-east corner.
 
   Polymer({
 
+    /**
+     * Fired when the element is resized.
+     *
+     * @event sm3-resizable-resized
+     */
+
     is: 'sm3-resizable',
 
     properties: {
-
-      /**
-       * The minimum width of this element.
-       */
-      minWidth: {
-        type: Number,
-        value: 32,
-        notify: true,
-        observer: '_enforceRestrictions'
-      },
-
-      /**
-       * The minimum height of this element.
-       */
-      minHeight: {
-        type: Number,
-        value: 32,
-        notify: true,
-        observer: '_enforceRestrictions'
-      },
-
-      /**
-       * The maximum width of this element.
-       * undefined => no max
-       */
-      maxWidth: {
-        type: Number,
-        notify: true,
-        observer: '_enforceRestrictions'
-      },
-
-      /**
-       * The maximum height of this element.
-       */
-      maxHeight: {
-        type: Number,
-        notify: true,
-        observer: '_enforceRestrictions'
-      },
 
       /**
        * If `handleNw` is true, this element can be resize by dragging the north-west corner.
@@ -276,7 +269,7 @@ Only resize by dragging the south and east edges and the south-east corner.
       container: {
         type: Object,
         value: null,
-        observer: '_enforceRestrictions'
+        observer: 'reinforceRestrictions'
       },
 
       /**
@@ -326,7 +319,28 @@ Only resize by dragging the south and east edges and the south-east corner.
     },
 
     attached: function() {
-      this._enforceRestrictions();
+      // wait until after first render so that the actual client size is known
+      setTimeout(function() {
+        this.reinforceRestrictions();
+      }.bind(this), 0);
+    },
+
+    /**
+     * Reinforce the restrictions on this element.
+     */
+    reinforceRestrictions: function() {
+      // don't do anything if not attached
+      if (!this.isAttached) {
+        return;
+      }
+
+      // update the saved data
+      this._saveCurrentData();
+
+      // apply restrictions
+      var transDim = this._getContainerConstraints(this.clientWidth, this.clientHeight, this._translateX, this._translateY);
+
+      this._resize(transDim.width, transDim.height, transDim.translateX, transDim.translateY);
     },
 
     /**
@@ -358,7 +372,7 @@ Only resize by dragging the south and east edges and the south-east corner.
           var transDim = this._getContainerConstraints(dim.width, dim.height, translateX, translateY);
 
           // apply the new style
-          this._updateStyle(transDim.width, transDim.height, transDim.translateX, transDim.translateY);
+          this._resize(transDim.width, transDim.height, transDim.translateX, transDim.translateY);
           break;
 
         case 'end':
@@ -406,7 +420,7 @@ Only resize by dragging the south and east edges and the south-east corner.
     },
 
     /**
-     * Restriction the given width and height using `minWidth`, `minHeight`, `maxWidth` and `maxHeight`.
+     * Restriction the given width and height using css properties `minWidth`, `minHeight`, `maxWidth` and `maxHeight`.
      * Returns those new values.
      *
      * @param {Number} width
@@ -414,19 +428,24 @@ Only resize by dragging the south and east edges and the south-east corner.
      * @return {{width: Number, height: Number}}
      */
     _getDimensionsWithRestrictionsEnforced: function(width, height) {
-      if (this.minWidth) {
-        width = Math.max(width, this.minWidth);
-      }
-      if (this.minHeight) {
-        height = Math.max(height, this.minHeight);
-      }
-      if (this.maxWidth) {
-        width = Math.min(width, this.maxWidth);
-      }
-      if (this.maxHeight) {
-        height = Math.min(height, this.maxHeight);
-      }
+      var style = getComputedStyle(this);
+      var minWidth = Number.parseFloat(style.minWidth);
+      var minHeight = Number.parseFloat(style.minHeight);
+      var maxWidth = Number.parseFloat(style.maxWidth);
+      var maxHeight = Number.parseFloat(style.maxHeight);
 
+      if (minWidth) {
+        width = Math.max(width, minWidth);
+      }
+      if (minHeight) {
+        height = Math.max(height, minHeight);
+      }
+      if (maxWidth) {
+        width = Math.min(width, maxWidth);
+      }
+      if (maxHeight) {
+        height = Math.min(height, maxHeight);
+      }
       return {width: width, height: height};
     },
 
@@ -458,28 +477,6 @@ Only resize by dragging the south and east edges and the south-east corner.
     },
 
     /**
-     * Enforce the restrictions on this element.
-     */
-    _enforceRestrictions: function() {
-      // don't do anything if not attached
-      if (!this.isAttached) {
-        return;
-      }
-      // wait for first render so that the actual client size is known
-      setTimeout(function() {
-        if (this._savedData === undefined) {
-          this._saveCurrentData();
-        }
-
-        // apply restrictions
-        var dim = this._getDimensionsWithRestrictionsEnforced(this.clientWidth, this.clientHeight);
-        var transDim = this._getContainerConstraints(dim.width, dim.height, this._translateX, this._translateY);
-
-        this._updateStyle(transDim.width, transDim.height, transDim.translateX, transDim.translateY);
-      }.bind(this), 0);
-    },
-
-    /**
      * Called when `disabled` is changed.
      */
     _onDisabledChanged: function() {
@@ -489,21 +486,28 @@ Only resize by dragging the south and east edges and the south-east corner.
         this.transform('translate(0px,0px)');
       }
       else {
-        this._enforceRestrictions();
+        this.reinforceRestrictions();
       }
     },
 
     /**
-     * Update the style being applied to this element
+     * Update the style being applied to this element.
      */
-    _updateStyle: function(width, height, translateX, translateY) {
-      this.style.width = width + 'px';
-      this.style.height = height + 'px';
+    _resize: function(width, height, translateX, translateY) {
+      var dim = this._getDimensionsWithRestrictionsEnforced(width, height);
+
+      this.style.width = dim.width + 'px';
+      this.style.height = dim.height + 'px';
       this.transform('translate('+translateX+'px,'+translateY+'px)');
 
       // save the translation
       this._translateX = translateX;
       this._translateY = translateY;
+
+      this.fire('sm3-resizable-resized', {
+        width: dim.width,
+        height: dim.height
+      });
     }
 
   });

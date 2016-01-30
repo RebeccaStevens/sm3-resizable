@@ -75,7 +75,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       }
       #demo3 sm3-resizable {
-
+        min-width: 75px;
+        min-height: 75px;
+        max-width: 250px;
+        max-height: 250px;
       }
       #demo4 sm3-resizable {
         --sm3-resizable-handle-size: 20px;
@@ -139,7 +142,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       <div class="demo" id="demo3">
         <h1>Demo 3</h1>
-        <sm3-resizable min-width="75" min-height="75" max-width="250" max-height="250">
+        <sm3-resizable>
           Restricted Resizing
         </sm3-resizable>
       </div>
@@ -173,16 +176,33 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </sm3-resizable>
       </div>
 
+      <div class="demo" id="demo8">
+        <h1>Demo 8</h1>
+        <sm3-resizable>
+          <div>
+            <span>resize-event</span><br><br>
+            <span class="size"></span>
+          </div>
+        </sm3-resizable>
+      </div>
+
     </div>
 
     <script>
       // demo 6 container
-      var demo6resizer = document.querySelector('#demo6 sm3-resizable');
-      demo6resizer.container = document.querySelector('#demo6');
+      var demo6resizer = Polymer.dom(document).querySelector('#demo6 sm3-resizable');
+      demo6resizer.container = Polymer.dom(document).querySelector('#demo6');
 
       // demo 7 container
-      var demo7resizer = document.querySelector('#demo7 sm3-resizable');
-      demo7resizer.container = document.querySelector('#demo7 .container');
+      var demo7resizer = Polymer.dom(document).querySelector('#demo7 sm3-resizable');
+      demo7resizer.container = Polymer.dom(document).querySelector('#demo7 .container');
+
+      // demo 8 event
+      var demo8resizer = Polymer.dom(document).querySelector('#demo8 sm3-resizable');
+      demo8resizer.addEventListener('sm3-resizable-resized', function(e) {
+        Polymer.dom(demo8resizer).querySelector('.size').innerHTML =
+          'width: ' + e.detail.width + 'px<br>height: ' + e.detail.height + 'px';
+      });
 
       // toggle handle visiablity
       var showHandles = false;
