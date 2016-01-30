@@ -4,6 +4,6 @@
   "dependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
     "polymer": "Polymer/polymer#^1.1.0",
-    "sm3-resizable": "slaymaster3000/sm3-resizable#^0.1.2"
+    "sm3-resizable": "slaymaster3000/sm3-resizable#^1.0.0"
   }
 }
