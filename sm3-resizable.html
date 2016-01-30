@@ -360,10 +360,9 @@ Custom property | Description | Default
           var handle = this._getHandleData(e.currentTarget.dataset.handle);
 
           // get the new desired dimesions of the element
-          var dim = {
-            width: this._savedData.width  + handle.x * e.detail.dx,
-            height: this._savedData.height + handle.y * e.detail.dy
-          };
+          var dim = this._getDimensionsWithRestrictionsEnforced(
+            this._savedData.width  + handle.x * e.detail.dx,
+            this._savedData.height + handle.y * e.detail.dy);
 
           // translate the element if needed
           var translateX = this._savedData.translateX + ((handle.x < 0) ? (this._savedData.width  - dim.width)  : 0);
@@ -421,6 +420,36 @@ Custom property | Description | Default
     },
 
     /**
+     * Restriction the given width and height using css properties `minWidth`, `minHeight`, `maxWidth` and `maxHeight`.
+     * Returns those new values.
+     *
+     * @param {Number} width
+     * @param {Number} height
+     * @return {{width: Number, height: Number}}
+     */
+    _getDimensionsWithRestrictionsEnforced: function(width, height) {
+      var style = getComputedStyle(this);
+      var minWidth = Number.parseFloat(style.minWidth);
+      var minHeight = Number.parseFloat(style.minHeight);
+      var maxWidth = Number.parseFloat(style.maxWidth);
+      var maxHeight = Number.parseFloat(style.maxHeight);
+
+      if (minWidth) {
+        width = Math.max(width, minWidth);
+      }
+      if (minHeight) {
+        height = Math.max(height, minHeight);
+      }
+      if (maxWidth) {
+        width = Math.min(width, maxWidth);
+      }
+      if (maxHeight) {
+        height = Math.min(height, maxHeight);
+      }
+      return {width: width, height: height};
+    },
+
+    /**
      * Restriction the given paramaters to the `container`.
      * Returns those new values.
      *
@@ -465,27 +494,10 @@ Custom property | Description | Default
      * Update the style being applied to this element.
      */
     _resize: function(width, height, translateX, translateY) {
-      var style = getComputedStyle(this);
-      var minWidth = Number.parseFloat(style.minWidth);
-      var minHeight = Number.parseFloat(style.minHeight);
-      var maxWidth = Number.parseFloat(style.maxWidth);
-      var maxHeight = Number.parseFloat(style.maxHeight);
+      var dim = this._getDimensionsWithRestrictionsEnforced(width, height);
 
-      if (minWidth) {
-        width = Math.max(width, minWidth);
-      }
-      if (minHeight) {
-        height = Math.max(height, minHeight);
-      }
-      if (maxWidth) {
-        width = Math.min(width, maxWidth);
-      }
-      if (maxHeight) {
-        height = Math.min(height, maxHeight);
-      }
-
-      this.style.width = width + 'px';
-      this.style.height = height + 'px';
+      this.style.width = dim.width + 'px';
+      this.style.height = dim.height + 'px';
       this.transform('translate('+translateX+'px,'+translateY+'px)');
 
       // save the translation
@@ -493,8 +505,8 @@ Custom property | Description | Default
       this._translateY = translateY;
 
       this.fire('sm3-resizable-resized', {
-        width: width,
-        height: height
+        width: dim.width,
+        height: dim.height
       });
     }
 
