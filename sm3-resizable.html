@@ -64,8 +64,11 @@ Custom property | Description | Default
         @apply(--sm3-resizable);
       }
       #content-container {
-        height: 100%;
-        width: 100%;
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
         box-sizing: border-box;
         overflow: auto;
         @apply(--sm3-resizable-content);
