@@ -334,8 +334,8 @@ Custom property | Description | Default
      * Reinforce the restrictions on this element.
      */
     reinforceRestrictions: function() {
-      // don't do anything if not attached
-      if (!this.isAttached) {
+      // don't do anything if this element is not attached or if it is disabled
+      if (!this.isAttached || this.disabled) {
         return;
       }
 
