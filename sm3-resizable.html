@@ -513,9 +513,7 @@ Custom property | Description | Default
      */
     _onDisabledChanged: function() {
       if (this.disabled) {
-        this.style.width = 'auto';
-        this.style.height = 'auto';
-        this.transform('translate(0px,0px)');
+        this._clearSizingData(false);
       }
       else {
         this.reinforceRestrictions();
