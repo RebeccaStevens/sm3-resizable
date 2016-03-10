@@ -349,6 +349,33 @@ Custom property | Description | Default
     },
 
     /**
+     * Reset this element back to its initial size.
+     */
+    reset: function() {
+      this._clearSizingData(!this.disabled);
+    },
+
+    /**
+     * Clear the sizing data.
+     *
+     * @param {Boolean} reinforceRestrictions - if true, `reinforceRestrictions` will be called
+     */
+    _clearSizingData: function(reinforceRestrictions) {
+      // clear resize data
+      this.style.width = '';
+      this.style.height = '';
+      this._translateX = 0;
+      this._translateY = 0;
+
+      if (reinforceRestrictions) {
+        this.reinforceRestrictions(); // reinforce restrictions - this updates the transform style property
+      }
+      else {
+        this.transform('');           // clear the transform style property
+      }
+    },
+
+    /**
      * Called when tracking on a handle.
      *
      * @param {Event} e
